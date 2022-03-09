@@ -14,7 +14,7 @@ function listMoviesShowing() {
 function read(movieId) {
     return knex("movies")
         .select("*")
-        .where({ id: movieId })
+        .where({ movie_id: movieId })
         .first();
 }
 
