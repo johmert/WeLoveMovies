@@ -20,7 +20,7 @@ function list() {
 function listByMovie(movieId) {
     return knex("theaters")
         .join("movies_theaters", "theaters.theater_id", "movies_theaters.theater_id")
-        .select("theaters.*", "movies_theaters.is_showing", "movies_thears.movie_id")
+        .select("theaters.*", "movies_theaters.is_showing", "movies_theaters.movie_id")
         .where({ movie_id: movieId });
 }
 
