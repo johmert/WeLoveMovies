@@ -7,7 +7,6 @@ const reviewsRouter = require("../reviews/reviews.router");
 
 router.use("/:movieId/reviews", controller.movieExists, reviewsRouter);
 router.use("/:movieId/theaters", controller.movieExists, theatersRouter);
-router.route("/:movieId/critics").all(notFound);
 router.route("/:movieId").get(controller.read).all(methodNotAllowed);
 router.route("/").get(controller.list).all(methodNotAllowed);
 

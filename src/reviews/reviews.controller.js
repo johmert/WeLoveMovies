@@ -7,15 +7,17 @@ function destroy(req, res, next) {
         .catch(next); 
 }
 
-async function read(req, res) {
-    res.locals.review.critic = await service.attachCritic(res.locals.review.critic_id);
+async function list(req, res) {
+    const { movieId } = req.params;
+    const reviews = await service.listByMovieId(movieId);
 
-    res.json({ data: res.locals.review });
+    res.json({ data: reviews });
 }
 
 async function reviewExists(req, res, next) {
     const { reviewId } = req.params;
-    const review = await service.read(reviewId);
+    const review = await service.readByReviewId(reviewId);
+
     if(review) {
         res.locals.review = review;
         return next();
@@ -29,8 +31,6 @@ async function reviewExists(req, res, next) {
 
 // update helper functions
 const requiredProperties = ["score", "content"];
-let score;
-let content;
 
 function hasOnlyRequiredProperties(req, res, next) {
     const { data = {} } = req.body;
@@ -63,7 +63,7 @@ async function update(req, res, next) {
 
 module.exports = {
     delete: [asyncErrorBoundary(reviewExists), destroy],
-    read: [asyncErrorBoundary(reviewExists), asyncErrorBoundary(read)],
+    list: [asyncErrorBoundary(list)],
     update: [
         asyncErrorBoundary(reviewExists),
         hasOnlyRequiredProperties,

@@ -14,7 +14,20 @@ function destroy(reviewId) {
         .del();
 }
 
-function read(reviewId) {
+function listByMovieId(movieId) {
+    return knex("reviews")
+        .select("*")
+        .where({ movie_id: movieId })
+        .then(reviews => {
+            return Promise.all(
+                reviews.map(review => {
+                    return attachCritic(review, review.critic_id);
+                })
+            )
+        });
+}
+
+function readByReviewId(reviewId) {
     return knex("reviews")
         .select("*")
         .where({ review_id: reviewId })
@@ -31,6 +44,7 @@ function update(updatedReview) {
 module.exports = {
     attachCritic,
     delete: destroy,
-    read,
+    listByMovieId,
+    readByReviewId,
     update,
 }
