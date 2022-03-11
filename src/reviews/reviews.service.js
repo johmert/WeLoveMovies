@@ -1,5 +1,13 @@
 const knex = require("../db/connection");
 
+async function attachCritic(review, criticId) {
+    review.critic = await knex("critics")
+        .select("*")
+        .where({ "critics.critic_id": criticId })
+        .first();
+    return review;
+}
+
 function destroy(reviewId) {
     return knex("reviews")
         .where({ review_id: reviewId })
@@ -15,12 +23,13 @@ function read(reviewId) {
 
 function update(updatedReview) {
     return knex("reviews")
+        .join("critics", "reviews.critic_id", "critics.critic_id")
         .where({ review_id: updatedReview.review_id })
-        .update(updatedReview)
-        .returning("*");
+        .update(updatedReview, "*");
 }
 
 module.exports = {
+    attachCritic,
     delete: destroy,
     read,
     update,

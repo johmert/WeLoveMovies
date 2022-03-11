@@ -7,6 +7,12 @@ function destroy(req, res, next) {
         .catch(next); 
 }
 
+async function read(req, res) {
+    res.locals.review.critic = await service.attachCritic(res.locals.review.critic_id);
+
+    res.json({ data: res.locals.review });
+}
+
 async function reviewExists(req, res, next) {
     const { reviewId } = req.params;
     const review = await service.read(reviewId);
@@ -23,23 +29,8 @@ async function reviewExists(req, res, next) {
 
 // update helper functions
 const requiredProperties = ["score", "content"];
-
-function hasRequiredProperties(req, res, next) {
-    const { data = {} } = req.body;
-    
-    try{
-        requiredProperties.forEach(property => {
-            if(!data[property]) {
-                const error = new Error (`A '${property}' property is required.`);
-                error.status = 400;
-                throw error;
-            }
-        });
-        next();
-    } catch (error) {
-        next(error);
-    }
-}
+let score;
+let content;
 
 function hasOnlyRequiredProperties(req, res, next) {
     const { data = {} } = req.body;
@@ -52,22 +43,30 @@ function hasOnlyRequiredProperties(req, res, next) {
     next();
 }
 
+
 async function update(req, res, next) {
     const updatedReview = {
-        ...req.body.data,
-        review_id: res.locals.review.review_id
+        score: req.body.data.score ? req.body.data.score : res.locals.review.score,
+        content: req.body.data.content ? req.body.data.content : res.locals.review.content,
+        review_id: res.locals.review.review_id,
+        movie_id: res.locals.review.movie_id,
+        critic_id: res.locals.review.critic_id,
+        created_at: res.locals.review.created_at,
+        updated_at: res.locals.review.updated_at,
     }
+
     service.update(updatedReview)
+        .then(data => service.attachCritic(updatedReview, updatedReview.critic_id))
         .then(data => res.json({ data }))
         .catch(next);
 }
 
 module.exports = {
     delete: [asyncErrorBoundary(reviewExists), destroy],
+    read: [asyncErrorBoundary(reviewExists), asyncErrorBoundary(read)],
     update: [
-        asyncErrorBoundary(reviewExists), 
-        hasOnlyRequiredProperties, 
-        hasRequiredProperties, 
+        asyncErrorBoundary(reviewExists),
+        hasOnlyRequiredProperties,
         asyncErrorBoundary(update)
     ]
 }
